@@ -28,13 +28,13 @@ namespace NzbDrone.Api.Movies
     {
         private const string TITLE_SLUG_ROUTE = "/titleslug/(?<slug>[^/]+)";
 
-        private readonly IMovieService _movieService;
         private readonly IAddMovieService _addMovieService;
+        private readonly IMovieService _movieService;
         private readonly IMapCoversToLocal _coverMapper;
 
         public MovieModule(IBroadcastSignalRMessage signalRBroadcaster,
-                           IMovieService movieService,
                            IAddMovieService addMovieService,
+                           IMovieService movieService,
                            IMapCoversToLocal coverMapper,
                            RootFolderValidator rootFolderValidator,
                            MappedNetworkDriveValidator mappedNetworkDriveValidator,
@@ -45,8 +45,8 @@ namespace NzbDrone.Api.Movies
                            ProfileExistsValidator profileExistsValidator)
         : base(signalRBroadcaster)
         {
-            _movieService = movieService;
             _addMovieService = addMovieService;
+            _movieService = movieService;
 
             _coverMapper = coverMapper;
 
