@@ -148,9 +148,12 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             movie.AlternativeTitles.AddRange(resource.AlternativeTitles.Select(MapAlternativeTitle));
             movie.AlternativeTitles.AddRange(resource.Translations.Select(MapTranslation).Where(t => t.Language != null));
 
+            movie.OriginalLanguage = IsoLanguages.Find(resource.OriginalLanguage.ToLower())?.Language ?? Language.English;
+
             movie.Website = resource.Homepage;
             movie.InCinemas = resource.InCinema;
             movie.PhysicalRelease = resource.PhysicalRelease;
+            movie.Recommendations = resource.Recommendations.Select(r => r.TmdbId).ToList();
 
             movie.Year = resource.Year;
 
