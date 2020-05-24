@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FluentValidation.Resources;
 using NzbDrone.Core.DecisionEngine.Specifications;
 using NzbDrone.Core.MediaCover;
 using NzbDrone.Core.Movies;
+using NzbDrone.Core.Movies.AlternativeTitles;
+using NzbDrone.Core.Parser;
 using Radarr.Api.V3.MovieFiles;
 using Radarr.Http.REST;
 
@@ -22,10 +25,12 @@ namespace Radarr.Api.V3.Movies
 
         //View Only
         public string Title { get; set; }
+        public string TranslatedTitle { get; set; }
         public List<AlternativeTitleResource> AlternateTitles { get; set; }
         public int? SecondaryYear { get; set; }
         public int SecondaryYearSourceId { get; set; }
         public string SortTitle { get; set; }
+        public string TranslatedSortTitle { get; set; }
         public long? SizeOnDisk { get; set; }
         public MovieStatusType Status { get; set; }
         public string Overview { get; set; }
@@ -86,7 +91,9 @@ namespace Radarr.Api.V3.Movies
                 Id = model.Id,
                 TmdbId = model.TmdbId,
                 Title = model.Title,
+                TranslatedSortTitle = model.Title,
                 SortTitle = model.SortTitle,
+                TranslatedTitle = model.SortTitle,
                 InCinemas = model.InCinemas,
                 PhysicalRelease = model.PhysicalRelease,
                 PhysicalReleaseNote = model.PhysicalReleaseNote,
@@ -131,7 +138,7 @@ namespace Radarr.Api.V3.Movies
             };
         }
 
-        public static MovieResource ToResource(this Movie model, IUpgradableSpecification upgradableSpecification)
+        public static MovieResource ToResource(this Movie model, IUpgradableSpecification upgradableSpecification, NzbDrone.Core.Languages.Language language)
         {
             if (model == null)
             {
@@ -141,12 +148,14 @@ namespace Radarr.Api.V3.Movies
             long size = model.MovieFile?.Size ?? 0;
             MovieFileResource movieFile = model.MovieFile?.ToResource(model, upgradableSpecification);
 
+            var translatedTitle = model.AlternativeTitles.Where(t => t.Language == language && t.SourceType == SourceType.Translation).FirstOrDefault()?.Title ?? model.Title;
+
             return new MovieResource
             {
                 Id = model.Id,
                 TmdbId = model.TmdbId,
-                Title = model.Title,
-                SortTitle = model.SortTitle,
+                Title = translatedTitle,
+                SortTitle = translatedTitle.NormalizeTitle(),
                 InCinemas = model.InCinemas,
                 PhysicalRelease = model.PhysicalRelease,
                 PhysicalReleaseNote = model.PhysicalReleaseNote,
@@ -254,9 +263,9 @@ namespace Radarr.Api.V3.Movies
             return movies.Select(ToResource).ToList();
         }
 
-        public static List<MovieResource> ToResource(this IEnumerable<Movie> movies, IUpgradableSpecification upgradableSpecification)
+        public static List<MovieResource> ToResource(this IEnumerable<Movie> movies, IUpgradableSpecification upgradableSpecification, NzbDrone.Core.Languages.Language language)
         {
-            return movies.ToList().ConvertAll(f => f.ToResource(upgradableSpecification));
+            return movies.ToList().ConvertAll(f => f.ToResource(upgradableSpecification, language));
         }
 
         public static List<Movie> ToModel(this IEnumerable<MovieResource> resources)

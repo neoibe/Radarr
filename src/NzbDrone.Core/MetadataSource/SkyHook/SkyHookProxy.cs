@@ -146,7 +146,7 @@ namespace NzbDrone.Core.MetadataSource.SkyHook
             movie.Overview = resource.Overview;
 
             movie.AlternativeTitles.AddRange(resource.AlternativeTitles.Select(MapAlternativeTitle));
-            movie.AlternativeTitles.AddRange(resource.Translations.Select(MapTranslation).Where(t => t.Language != null));
+            movie.AlternativeTitles.AddRange(resource.Translations.Select(MapTranslation).Where(t => t.Language != null).DistinctBy(m => new { m.CleanTitle, m.Language }));
 
             movie.OriginalLanguage = IsoLanguages.Find(resource.OriginalLanguage.ToLower())?.Language ?? Language.English;
 

@@ -39,7 +39,6 @@ import MovieAlternateTitles from './MovieAlternateTitles';
 import MovieDetailsLinks from './MovieDetailsLinks';
 import InteractiveSearchTable from 'InteractiveSearch/InteractiveSearchTable';
 import InteractiveSearchFilterMenuConnector from 'InteractiveSearch/InteractiveSearchFilterMenuConnector';
-import TranslatedMovieTitleConnector from '../TranslatedMovieTitleConnector';
 // import MovieTagsConnector from './MovieTagsConnector';
 import styles from './MovieDetails.css';
 
@@ -289,9 +288,7 @@ class MovieDetails extends Component {
                     </div>
 
                     <div className={styles.title}>
-                      <TranslatedMovieTitleConnector
-                        movieId={id}
-                      />
+                      {title}
                     </div>
 
                     {

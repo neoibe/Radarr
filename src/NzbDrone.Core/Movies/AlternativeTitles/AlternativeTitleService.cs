@@ -90,12 +90,10 @@ namespace NzbDrone.Core.Movies.AlternativeTitles
             // Now find titles to delete, update and insert.
             var existingTitles = _titleRepo.FindByMovieId(movieId);
 
-            var insert = deduplicatedTitles.Where(t => !existingTitles.Contains(t));
-            var update = existingTitles.Where(t => deduplicatedTitles.Contains(t));
-            var delete = existingTitles.Where(t => !deduplicatedTitles.Contains(t));
+            var insert = deduplicatedTitles.Where(t => !existingTitles.Any(e => e.CleanTitle == t.CleanTitle && e.Language == t.Language && e.SourceType == t.SourceType));
+            var delete = existingTitles.Where(e => !deduplicatedTitles.Any(t => t.CleanTitle == e.CleanTitle && t.Language == e.Language && t.SourceType == e.SourceType));
 
             _titleRepo.DeleteMany(delete.ToList());
-            _titleRepo.UpdateMany(update.ToList());
             _titleRepo.InsertMany(insert.ToList());
 
             return titles;

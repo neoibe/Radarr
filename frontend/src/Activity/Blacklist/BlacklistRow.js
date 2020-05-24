@@ -76,7 +76,7 @@ class BlacklistRow extends Component {
                 <TableRowCell key={name}>
                   <MovieTitleLink
                     titleSlug={movie.titleSlug}
-                    id={movie.id}
+                    title={movie.title}
                   />
                 </TableRowCell>
               );

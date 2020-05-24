@@ -11,7 +11,6 @@ import EditMovieModalConnector from 'Movie/Edit/EditMovieModalConnector';
 import DeleteMovieModal from 'Movie/Delete/DeleteMovieModal';
 import MovieIndexProgressBar from 'Movie/Index/ProgressBar/MovieIndexProgressBar';
 import MovieIndexPosterInfo from './MovieIndexPosterInfo';
-import TranslatedMovieTitleConnector from '../../TranslatedMovieTitleConnector';
 import styles from './MovieIndexPoster.css';
 
 class MovieIndexPoster extends Component {
@@ -187,9 +186,7 @@ class MovieIndexPoster extends Component {
             {
               hasPosterError &&
                 <div className={styles.overlayTitle}>
-                  <TranslatedMovieTitleConnector
-                    movieId={id}
-                  />
+                  {title}
                 </div>
             }
           </Link>
@@ -206,9 +203,7 @@ class MovieIndexPoster extends Component {
         {
           showTitle &&
             <div className={styles.title}>
-              <TranslatedMovieTitleConnector
-                movieId={id}
-              />
+              {title}
             </div>
         }
 

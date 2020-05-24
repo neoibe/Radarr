@@ -61,6 +61,7 @@ class MovieIndexRow extends Component {
   render() {
     const {
       id,
+      title,
       monitored,
       status,
       titleSlug,
@@ -140,7 +141,7 @@ class MovieIndexRow extends Component {
                 >
                   <MovieTitleLink
                     titleSlug={titleSlug}
-                    id={id}
+                    title={title}
                   />
                 </VirtualTableRowCell>
               );
