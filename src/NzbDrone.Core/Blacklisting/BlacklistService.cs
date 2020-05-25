@@ -23,7 +23,8 @@ namespace NzbDrone.Core.Blacklisting
 
                                     IExecute<ClearBlacklistCommand>,
                                     IHandle<DownloadFailedEvent>,
-                                    IHandleAsync<MovieDeletedEvent>
+                                    IHandleAsync<MovieDeletedEvent>,
+                                    IHandleAsync<MoviesDeletedEvent>
     {
         private readonly IBlacklistRepository _blacklistRepository;
 
@@ -165,6 +166,13 @@ namespace NzbDrone.Core.Blacklisting
             var blacklisted = _blacklistRepository.BlacklistedByMovie(message.Movie.Id);
 
             _blacklistRepository.DeleteMany(blacklisted);
+        }
+
+        public void HandleAsync(MoviesDeletedEvent message)
+        {
+            var releasesToRemove = _blacklistRepository.All().Where(b => message.Movies.Select(m => m.Id).Contains(b.MovieId)).ToList();
+
+            _blacklistRepository.DeleteMany(releasesToRemove);
         }
     }
 }

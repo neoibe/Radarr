@@ -35,6 +35,7 @@ namespace NzbDrone.Core.Download.Pending
     public class PendingReleaseService : IPendingReleaseService,
                                          IHandle<MovieGrabbedEvent>,
                                          IHandle<MovieDeletedEvent>,
+                                         IHandle<MoviesDeletedEvent>,
                                          IHandle<RssSyncCompleteEvent>
     {
         private readonly IIndexerStatusService _indexerStatusService;
@@ -411,6 +412,13 @@ namespace NzbDrone.Core.Download.Pending
         public void Handle(MovieDeletedEvent message)
         {
             _repository.DeleteByMovieId(message.Movie.Id);
+        }
+
+        public void Handle(MoviesDeletedEvent message)
+        {
+            var releasesToRemove = _repository.All().Where(p => message.Movies.Select(m => m.Id).Contains(p.MovieId)).ToList();
+
+            _repository.DeleteMany(releasesToRemove);
         }
 
         public void Handle(MovieGrabbedEvent message)

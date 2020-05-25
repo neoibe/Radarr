@@ -24,6 +24,7 @@ namespace NzbDrone.Core.MediaCover
     public class MediaCoverService :
         IHandleAsync<MovieUpdatedEvent>,
         IHandleAsync<MovieDeletedEvent>,
+        IHandleAsync<MoviesDeletedEvent>,
         IMapCoversToLocal
     {
         private readonly IImageResizer _resizer;
@@ -201,6 +202,18 @@ namespace NzbDrone.Core.MediaCover
             if (_diskProvider.FolderExists(path))
             {
                 _diskProvider.DeleteFolder(path, true);
+            }
+        }
+
+        public void HandleAsync(MoviesDeletedEvent message)
+        {
+            foreach (var movie in message.Movies)
+            {
+                var path = GetMovieCoverPath(movie.Id);
+                if (_diskProvider.FolderExists(path))
+                {
+                    _diskProvider.DeleteFolder(path, true);
+                }
             }
         }
     }

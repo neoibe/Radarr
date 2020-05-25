@@ -39,6 +39,7 @@ namespace NzbDrone.Core.Movies
         PagingSpec<Movie> MoviesWithoutFiles(PagingSpec<Movie> pagingSpec);
         void SetFileId(Movie movie, MovieFile movieFile);
         void DeleteMovie(int movieId, bool deleteFiles, bool addExclusion = false);
+        void DeleteMovies(List<int> movieIds, bool deleteFiles, bool addExclusion = false);
         List<Movie> GetAllMovies();
         List<Movie> AllForTag(int tagId);
         Movie UpdateMovie(Movie movie);
@@ -241,6 +242,29 @@ namespace NzbDrone.Core.Movies
             _movieRepository.Delete(movieId);
             _eventAggregator.PublishEvent(new MovieDeletedEvent(movie, deleteFiles));
             _logger.Info("Deleted movie {}", movie);
+        }
+
+        public void DeleteMovies(List<int> movieIds, bool deleteFiles, bool addExclusion = false)
+        {
+            var allMovies = _movieRepository.All().ToList();
+            var moviesToDelete = allMovies.Where(m => movieIds.Contains(m.Id)).ToList();
+
+            if (addExclusion)
+            {
+                foreach (var movie in moviesToDelete)
+                {
+                    _exclusionService.AddExclusion(new ImportExclusion { TmdbId = movie.TmdbId, MovieTitle = movie.Title, MovieYear = movie.Year });
+                }
+            }
+
+            _movieRepository.DeleteMany(movieIds);
+
+            _eventAggregator.PublishEvent(new MoviesDeletedEvent(moviesToDelete, deleteFiles));
+
+            foreach (var movie in moviesToDelete)
+            {
+                _logger.Info("Deleted movie {}", movie);
+            }
         }
 
         public List<Movie> GetAllMovies()

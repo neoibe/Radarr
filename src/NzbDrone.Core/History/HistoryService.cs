@@ -38,6 +38,7 @@ namespace NzbDrone.Core.History
                                   IHandle<MovieFileDeletedEvent>,
                                   IHandle<MovieFileRenamedEvent>,
                                   IHandle<MovieDeletedEvent>,
+                                  IHandle<MoviesDeletedEvent>,
                                   IHandle<DownloadIgnoredEvent>
     {
         private readonly IHistoryRepository _historyRepository;
@@ -250,6 +251,13 @@ namespace NzbDrone.Core.History
         public void Handle(MovieDeletedEvent message)
         {
             _historyRepository.DeleteForMovie(message.Movie.Id);
+        }
+
+        public void Handle(MoviesDeletedEvent message)
+        {
+            var filesToRemove = _historyRepository.All().Where(h => message.Movies.Select(m => m.Id).Contains(h.MovieId)).ToList();
+
+            _historyRepository.DeleteMany(filesToRemove);
         }
 
         public string FindDownloadId(MovieImportedEvent trackedDownload)

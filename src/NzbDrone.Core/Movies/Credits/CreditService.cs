@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using NzbDrone.Common.Extensions;
 using NzbDrone.Core.Messaging.Events;
@@ -16,7 +16,7 @@ namespace NzbDrone.Core.Movies.Credits
         List<Credit> UpdateCredits(List<Credit> credits, Movie movie);
     }
 
-    public class CreditService : ICreditService, IHandleAsync<MovieDeletedEvent>
+    public class CreditService : ICreditService, IHandleAsync<MovieDeletedEvent>, IHandleAsync<MoviesDeletedEvent>
     {
         private readonly ICreditRepository _creditRepo;
 
@@ -85,6 +85,13 @@ namespace NzbDrone.Core.Movies.Credits
         public void HandleAsync(MovieDeletedEvent message)
         {
             _creditRepo.DeleteMany(GetAllCreditsForMovie(message.Movie.Id));
+        }
+
+        public void HandleAsync(MoviesDeletedEvent message)
+        {
+            var creditsToRemove = _creditRepo.All().Where(c => message.Movies.Select(m => m.Id).Contains(c.MovieId)).ToList();
+
+            _creditRepo.DeleteMany(creditsToRemove);
         }
     }
 }

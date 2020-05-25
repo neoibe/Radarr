@@ -21,6 +21,7 @@ namespace NzbDrone.Core.MediaFiles
 
     public class MediaFileDeletionService : IDeleteMediaFiles,
                                             IHandleAsync<MovieDeletedEvent>,
+                                            IHandleAsync<MoviesDeletedEvent>,
                                             IHandle<MovieFileDeletedEvent>
     {
         private readonly IDiskProvider _diskProvider;
@@ -113,6 +114,42 @@ namespace NzbDrone.Core.MediaFiles
                 if (_diskProvider.FolderExists(message.Movie.Path))
                 {
                     _recycleBinProvider.DeleteFolder(message.Movie.Path);
+                }
+            }
+        }
+
+        public void HandleAsync(MoviesDeletedEvent message)
+        {
+            if (message.DeleteFiles)
+            {
+                var allMovies = _movieService.GetAllMovies();
+
+                foreach (var movie in message.Movies)
+                {
+                    foreach (var s in allMovies)
+                    {
+                        if (s.Id == movie.Id)
+                        {
+                            continue;
+                        }
+
+                        if (movie.Path.IsParentPath(s.Path))
+                        {
+                            _logger.Error("Movie path: '{0}' is a parent of another movie, not deleting files.", movie.Path);
+                            return;
+                        }
+
+                        if (movie.Path.PathEquals(s.Path))
+                        {
+                            _logger.Error("Movie path: '{0}' is the same as another movie, not deleting files.", movie.Path);
+                            return;
+                        }
+                    }
+
+                    if (_diskProvider.FolderExists(movie.Path))
+                    {
+                        _recycleBinProvider.DeleteFolder(movie.Path);
+                    }
                 }
             }
         }
